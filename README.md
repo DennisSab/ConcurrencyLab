@@ -5,7 +5,9 @@ I'm working on a directory-based stack that supports concurrent push and pop ope
 
 Files
 main.c: Contains the main function and thread operations.
+
 stack.c: Implements the stack's push and pop logic, including hash table insertions and deletions.
+
 stack.h: Header file with function declarations and necessary includes.
 
 Build and Run
