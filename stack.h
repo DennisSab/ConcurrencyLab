@@ -1,32 +1,27 @@
-#ifndef STACK_H
-#define STACK_H
-
+#include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
+#include <stdatomic.h>
+#include <time.h>
+#include <stdbool.h>
+#include <unistd.h>
 
-// Define the stack structure
-typedef struct {
-    int *data;        // Array to hold stack elements
-    int top;          // Index of the top element
-    int capacity;     // Capacity of the stack
-    pthread_mutex_t lock;  // Mutex for thread-safe operations
-} Stack;
 
-// Function to create a stack
-Stack* create_stack(int capacity);
+#define NUM_THREADS 8
+#define HASH_TABLE_SIZE 10
 
-// Function to push an element onto the stack
-void push(Stack *stack, int item);
+typedef struct Node{
+    int key;
+    int data;
+    struct Node* next;
+}Node;
 
-// Function to pop an element from the stack
-int pop(Stack *stack);
+int hashFunction(int key);
 
-// Function to check if the stack is empty
-int is_empty(Stack *stack);
+int DirInsert(int key,int data);
 
-// Function to get the size of the stack
-int size(Stack *stack);
+int DirDelete(int key);
 
-// Function to destroy the stack
-void destroy_stack(Stack *stack);
+void* push() ;
 
-#endif // STACK_H
+void* pop() ;

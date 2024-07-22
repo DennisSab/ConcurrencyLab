@@ -1,63 +1,92 @@
 #include "stack.h"
-#include <stdio.h>
-#include <stdlib.h>
 
-// Function to create a stack
-Stack* create_stack(int capacity) {
-    Stack *stack = (Stack*)malloc(sizeof(Stack));
-    stack->capacity = capacity;
-    stack->top = -1;
-    stack->data = (int*)malloc(capacity * sizeof(int));
-    pthread_mutex_init(&stack->lock, NULL);  // Initialize the mutex
-    return stack;
+extern atomic_int top_value;
+
+Node * hashTable[HASH_TABLE_SIZE];
+
+int hashFunction(int key){
+    return key %HASH_TABLE_SIZE;
 }
 
-// Function to push an element onto the stack
-void push(Stack *stack, int item) {
-    pthread_mutex_lock(&stack->lock);  // Acquire the lock
-    if (stack->top == stack->capacity - 1) {
-        printf("Stack overflow\n");
+int DirInsert(int key,int data){
+    unsigned int hashIndex = hashFunction(key);
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (!newNode) return false;
+
+    newNode->key = key;
+    newNode->data = data;
+    newNode->next = NULL;
+
+    Node* current = hashTable[hashIndex];
+    if (!current) {
+        hashTable[hashIndex] = newNode;
     } else {
-        stack->data[++stack->top] = item;
-        printf("Pushed: %d | Stack size: %d\n", item, stack->top + 1);
+        while (current->next) {
+            current = current->next;
+        }
+        current->next = newNode;
     }
-    pthread_mutex_unlock(&stack->lock);  // Release the lock
+
+    printf("Inserted KEY: %d\n", key);
+    return true;
 }
 
-// Function to pop an element from the stack
-int pop(Stack *stack) {
-    pthread_mutex_lock(&stack->lock);  // Acquire the lock
-    if (stack->top == -1) {
-        printf("Stack underflow\n");
-        pthread_mutex_unlock(&stack->lock);  // Release the lock
-        return -1;  // Return -1 to indicate stack underflow
+int DirDelete(int key){
+    unsigned int hashIndex = hashFunction(key);
+
+    Node* current = hashTable[hashIndex];
+    Node* prev = NULL;
+
+    while (current && current->key != key) {
+        prev = current;
+        current = current->next;
+    }
+
+    if (!current) {
+        printf("No key deleted!\n");
+        return false;
+    }
+
+    if (prev) {
+        prev->next = current->next;
     } else {
-        int item = stack->data[stack->top--];
-        printf("Popped: %d | Stack size: %d\n", item, stack->top + 1);
-        pthread_mutex_unlock(&stack->lock);  // Release the lock
-        return item;
+        hashTable[hashIndex] = current->next;
     }
+
+    free(current);
+
+    printf("Deleted KEY: %d\n", key);
+    return true;
+};
+
+
+void* push() {
+
+    struct timespec ts;
+    ts.tv_sec=0;
+    ts.tv_nsec=(rand()%100)*1000000;
+    nanosleep(&ts,NULL);
+
+    atomic_fetch_add(&top_value, 1);
+    DirInsert(top_value,0);
+    return NULL;
 }
 
-// Function to check if the stack is empty
-int is_empty(Stack *stack) {
-    pthread_mutex_lock(&stack->lock);  // Acquire the lock
-    int empty = (stack->top == -1);
-    pthread_mutex_unlock(&stack->lock);  // Release the lock
-    return empty;
-}
+void* pop() {
 
-// Function to get the size of the stack
-int size(Stack *stack) {
-    pthread_mutex_lock(&stack->lock);  // Acquire the lock
-    int size = stack->top + 1;
-    pthread_mutex_unlock(&stack->lock);  // Release the lock
-    return size;
-}
+    struct timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = (rand() % 100) * 1000000; // Random sleep between 0 and 99 milliseconds
+    nanosleep(&ts, NULL);  
 
-// Function to destroy the stack
-void destroy_stack(Stack *stack) {
-    pthread_mutex_destroy(&stack->lock);  // Destroy the mutex
-    free(stack->data);  // Free the stack array
-    free(stack);  // Free the stack structure
+    atomic_fetch_sub(&top_value, 1);
+    int key=top_value;
+    if(key==-2){
+        atomic_fetch_add(&top_value,1);
+        printf("POP SKIPPED!\n");
+        return NULL;
+    }else{
+        DirDelete(top_value+1);
+    }
+    return NULL;
 }

@@ -1,20 +1,39 @@
-#include <stdio.h>
 #include "stack.h"
 
-int main() {
-    Stack *stack = create_stack(5);
+atomic_int top_value;
 
-    // Push and pop elements to test the stack
-    push(stack, 10);
-    push(stack, 20);
-    push(stack, 30);
+int main(){
 
-    pop(stack);
-    pop(stack);
-    pop(stack);
+    pthread_t threads[NUM_THREADS];
 
-    // Clean up
-    destroy_stack(stack);
+    atomic_init(&top_value,-1);
+
+    srand(time(NULL));
+
+    for(int i=0;i<NUM_THREADS;++i){
+        if(rand()%2==0){
+            if(pthread_create(&threads[i],NULL,push,NULL)!=0){
+                perror("Failed to create thread!\n");
+            }
+        }else{
+            if (pthread_create(&threads[i],NULL,pop,NULL)!=0){
+                perror("Failed to create thread!\n");
+            }
+            
+        }
+    }
+    // Wait for all threads to finish
+    for (int i = 0; i < NUM_THREADS; ++i) {
+        if (pthread_join(threads[i], NULL) != 0) {
+            perror("Failed to join thread");
+            return 1;
+        }
+    }
+
+    // Print the final value of top_value
+    printf("Final value of top_value: %d\n", atomic_load(&top_value));
 
     return 0;
+
+
 }
