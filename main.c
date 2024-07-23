@@ -5,18 +5,19 @@ atomic_int top_value;
 int main(){
 
     pthread_t threads[NUM_THREADS];
+    ThreadData thread_data[NUM_THREADS];
 
     atomic_init(&top_value,-1);
-
     srand(time(NULL));
 
     for(int i=0;i<NUM_THREADS;++i){
+        thread_data[i].thread_id=i;
         if(rand()%2==0){
-            if(pthread_create(&threads[i],NULL,push,NULL)!=0){
+            if(pthread_create(&threads[i],NULL,push,&thread_data[i])!=0){
                 perror("Failed to create thread!\n");
             }
         }else{
-            if (pthread_create(&threads[i],NULL,pop,NULL)!=0){
+            if (pthread_create(&threads[i],NULL,pop,&thread_data[i])!=0){
                 perror("Failed to create thread!\n");
             }
             

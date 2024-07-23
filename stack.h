@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 
-#define NUM_THREADS 8
+#define NUM_THREADS 10
 #define HASH_TABLE_SIZE 10
 
 typedef struct Node{
@@ -16,12 +16,29 @@ typedef struct Node{
     struct Node* next;
 }Node;
 
+typedef struct Timer{
+    struct timespec start;
+    struct timespec finish;
+}Timer;
+
+typedef struct ThreadData {
+    int thread_id;
+    Timer timer;
+} ThreadData;
+
+
 int hashFunction(int key);
 
 int DirInsert(int key,int data);
 
 int DirDelete(int key);
 
-void* push() ;
+void start_timer(Timer* timer);
 
-void* pop() ;
+void stop_timer(Timer* timer);
+
+double get_elapsed_time(Timer* timer);
+
+void* push(void* arg);
+
+void* pop(void* arg);

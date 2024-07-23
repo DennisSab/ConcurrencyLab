@@ -27,7 +27,7 @@ int DirInsert(int key,int data){
         current->next = newNode;
     }
 
-    printf("Inserted KEY: %d\n", key);
+    //printf("Inserted KEY: %d\n", key);
     return true;
 }
 
@@ -43,7 +43,7 @@ int DirDelete(int key){
     }
 
     if (!current) {
-        printf("No key deleted!\n");
+        //printf("No key deleted!\n");
         return false;
     }
 
@@ -55,12 +55,29 @@ int DirDelete(int key){
 
     free(current);
 
-    printf("Deleted KEY: %d\n", key);
+    //printf("Deleted KEY: %d\n", key);
     return true;
 };
 
+void start_timer(Timer* timer) {
+    clock_gettime(CLOCK_MONOTONIC, &timer->start);
+}
 
-void* push() {
+void stop_timer(Timer* timer) {
+    clock_gettime(CLOCK_MONOTONIC, &timer->finish);
+}
+
+double get_elapsed_time(Timer* timer) {
+    double start_sec = timer->start.tv_sec + timer->start.tv_nsec / 1e9;
+    double finish_sec = timer->finish.tv_sec + timer->finish.tv_nsec / 1e9;
+    return finish_sec - start_sec;
+}
+
+
+void* push(void* arg) {
+
+    ThreadData*data=(ThreadData*)arg;
+    start_timer(&data->timer);
 
     struct timespec ts;
     ts.tv_sec=0;
@@ -69,10 +86,16 @@ void* push() {
 
     atomic_fetch_add(&top_value, 1);
     DirInsert(top_value,0);
+
+    stop_timer(&data->timer);
+    printf("Thread %d PUSH %.5f\n", data->thread_id, get_elapsed_time(&data->timer));
     return NULL;
 }
 
-void* pop() {
+void* pop(void* arg){
+
+    ThreadData* data = (ThreadData*) arg;
+    start_timer(&data->timer);
 
     struct timespec ts;
     ts.tv_sec = 0;
@@ -83,10 +106,13 @@ void* pop() {
     int key=top_value;
     if(key==-2){
         atomic_fetch_add(&top_value,1);
-        printf("POP SKIPPED!\n");
+        //printf("POP SKIPPED!\n");
+        stop_timer(&data->timer);
         return NULL;
     }else{
         DirDelete(top_value+1);
     }
+    stop_timer(&data->timer);
+    printf("Thread %d POP %.5f\n", data->thread_id, get_elapsed_time(&data->timer));
     return NULL;
 }
