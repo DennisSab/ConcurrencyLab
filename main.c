@@ -18,7 +18,7 @@ int main(){
             }
         }else{
             if (pthread_create(&threads[i],NULL,pop,&thread_data[i])!=0){
-                perror("Failed to create thread!\n");
+                perror("Failed to create thread!\n");  
             }
             
         }
