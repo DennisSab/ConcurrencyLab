@@ -93,12 +93,6 @@ void* push(void* arg) {
     ThreadData* data = (ThreadData*)arg;
     setThreadAffinity(data->thread_id);
 
-    
-
-    struct timespec ts;
-    ts.tv_sec=0;
-    ts.tv_nsec=(rand()%100)*1000000;
-    nanosleep(&ts,NULL);
 
     start_timer(&data->timer);
     int key = atomic_fetch_add(&top_value, 1);
@@ -113,12 +107,6 @@ void* push(void* arg) {
 void* pop(void* arg) {
     ThreadData* data = (ThreadData*)arg;
     setThreadAffinity(data->thread_id);
-
-    
-    struct timespec ts;
-    ts.tv_sec=0;
-    ts.tv_nsec=(rand()%100)*1000000;
-    nanosleep(&ts,NULL);
 
     start_timer(&data->timer);
 
