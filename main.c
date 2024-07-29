@@ -1,5 +1,5 @@
 #include "stack.h"
-int ok;
+
 
 atomic_int top_value;
 

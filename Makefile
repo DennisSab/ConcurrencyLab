@@ -2,7 +2,7 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -std=c11 -pthread -O2
+CFLAGS = -Wall -Wextra -std=c11 -pthread -O2 -lnuma
 
 # Source files
 SRCS = main.c stack.c
