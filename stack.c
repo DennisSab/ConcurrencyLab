@@ -95,6 +95,12 @@ void* push(void* arg) {
 
 
     start_timer(&data->timer);
+
+    struct timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = (rand() % 100) * 1000000;
+    nanosleep(&ts, NULL);  // Simulate delay
+
     int key = atomic_fetch_add(&top_value, 1);
     DirInsert(key, 0);
 
@@ -109,6 +115,11 @@ void* pop(void* arg) {
     setThreadAffinity(data->thread_id);
 
     start_timer(&data->timer);
+
+    struct timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = (rand() % 100) * 1000000;
+    nanosleep(&ts, NULL);  // Simulate delay
 
     int key = atomic_fetch_sub(&top_value, 1);
     if (key >= 0) {
