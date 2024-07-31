@@ -43,6 +43,12 @@ void insert(int numa_node, int key, int value) {
     new_entry->next = NULL;
 
     pthread_mutex_lock(&table->lock);
+    start_timer(&table->timer);
+
+    struct timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = (rand() % 100) * 1000000;
+    nanosleep(&ts, NULL);  // Simulate delay
 
     Entry* current = table->buckets[bucket];
     if (current == NULL) {
@@ -58,8 +64,11 @@ void insert(int numa_node, int key, int value) {
             current->next = new_entry; // Insert new entry
         }
     }
-
+    stop_timer(&table->timer);
     pthread_mutex_unlock(&table->lock);
+
+    double elapsed_time = get_elapsed_time(&table->timer);
+    printf("Insert operation in numa node %d took %f seconds\n",numa_node,elapsed_time);
 }
 
 int lookup(int numa_node, int key) {
@@ -96,6 +105,11 @@ void delete(int numa_node, int key) {
     unsigned int bucket = hash(key);
 
     pthread_mutex_lock(&table->lock);
+    start_timer(&table->timer);
+    struct timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = (rand() % 100) * 1000000;
+    nanosleep(&ts, NULL);  // Simulate delay
 
     Entry* current = table->buckets[bucket];
     Entry* prev = NULL;
@@ -115,5 +129,24 @@ void delete(int numa_node, int key) {
         current = current->next;
     }
 
+    stop_timer(&table->timer);
     pthread_mutex_unlock(&table->lock);
+
+    double elapsed_time = get_elapsed_time(&table->timer);
+    printf("Delete operation in numa node %d took %f seconds\n",numa_node, elapsed_time);
+}
+
+
+void start_timer(Timer* timer) {
+    clock_gettime(CLOCK_MONOTONIC, &timer->start);
+}
+
+void stop_timer(Timer* timer) {
+    clock_gettime(CLOCK_MONOTONIC, &timer->finish);
+}
+
+double get_elapsed_time(Timer* timer) {
+    double start_sec = timer->start.tv_sec + timer->start.tv_nsec / 1e9;
+    double finish_sec = timer->finish.tv_sec + timer->finish.tv_nsec / 1e9;
+    return finish_sec - start_sec;
 }

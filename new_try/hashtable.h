@@ -9,7 +9,7 @@
 #include <pthread.h>
 
 #define NUMA_NODES 4
-#define BUCKETS_PER_NODE 256  // Number of buckets per NUMA node
+#define BUCKETS_PER_NODE 16  // Number of buckets per NUMA node
 
 typedef struct Entry {
     int key;
@@ -17,9 +17,15 @@ typedef struct Entry {
     struct Entry* next;
 } Entry;
 
+typedef struct Timer{
+    struct timespec start;
+    struct timespec finish;
+}Timer;
+
 typedef struct Hashtable {
     Entry* buckets[BUCKETS_PER_NODE];
     pthread_mutex_t lock; // Mutex for hashtable operations
+    Timer timer;
 } Hashtable;
 
 // Declare hashtables array as extern
@@ -36,5 +42,11 @@ int lookup(int numa_node, int key);
 
 // Delete a key-value pair from the hashtable for a specific NUMA node
 void delete(int numa_node, int key);
+
+void start_timer(Timer* timer);
+
+void stop_timer(Timer* timer);
+
+double get_elapsed_time(Timer* timer);
 
 #endif // HASHTABLE_H

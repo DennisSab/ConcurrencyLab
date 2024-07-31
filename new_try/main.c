@@ -7,7 +7,7 @@
 #include <sched.h>
 #include <time.h>
 
-#define THREADS_PER_NODE 4
+#define THREADS_PER_NODE 16
 #define NUMA_NODES 4 // Define the number of NUMA nodes
 
 void* thread_func(void* arg) {
@@ -51,35 +51,36 @@ void* thread_func(void* arg) {
         return NULL;
     }
 
-    // Improved random seed using time, numa_node, and pthread ID
-    srand(time(NULL) + numa_node + pthread_self());
-
-
-    // Perform hashtable operations randomly
     int key = rand() % 100;
     int action = rand() % 2; // Randomly choose between 0 (insert) and 1 (delete)
+    //printf("NUMA NODE:%d key:%d - value:%d\n",numa_node,key,action);
 
     if (action == 0) {
         int value = rand() % 1000; // Generate a random value
         insert(numa_node, key, value); // Insert a key-value pair
-        printf("Thread on NUMA node %d inserted key %d with value %d\n", numa_node, key, value);
+        //printf("Thread on NUMA node %d inserted key %d with value %d\n", numa_node, key, value);
     } else {
         int value = lookup(numa_node, key); // Lookup a value by key
         if (value != -1) {
-            printf("Thread on NUMA node %d found value %d for key %d\n", numa_node, value, key);
+            //printf("Thread on NUMA node %d found value %d for key %d\n", numa_node, value, key);
             delete(numa_node, key); // Delete the key-value pair
-            printf("Thread on NUMA node %d deleted key %d\n", numa_node, key);
+            //printf("Thread on NUMA node %d deleted key %d\n", numa_node, key);
         } else {
-            printf("Thread on NUMA node %d did not find key %d to delete\n", numa_node, key);
+            // Key not found, attempt an insert to ensure action is taken
+            int new_value = rand() % 1000;
+            insert(numa_node, key, new_value);
+            ///printf("Thread on NUMA node %d could not find key %d to delete, inserted with value %d\n", numa_node, key, new_value);
         }
     }
-
+    
     return NULL;
 }
 
 int main() {
     pthread_t threads[NUMA_NODES * THREADS_PER_NODE];
     int numa_nodes[NUMA_NODES * THREADS_PER_NODE];
+
+    srand(time(NULL));
 
     init_hashtables();
 
