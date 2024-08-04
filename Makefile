@@ -5,10 +5,10 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -pthread -O2 -lnuma
 
 # Source files
-SRCS = main.c stack.c
+SRCS = main.c hashtable.c
 
 # Header files
-HEADERS = stack.h
+HEADERS = hashtable.h
 
 # Object files
 OBJS = $(SRCS:.c=.o)
