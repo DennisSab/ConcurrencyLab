@@ -40,7 +40,7 @@ unsigned int hash_to_bucket(int key);
 void init_hashtables(void);
 
 // Insert a key-value pair into the hashtable for a specific NUMA node
-void insert(int key, int value);
+void insert(int numa_node, int key, int value);
 
 // Lookup a value by key in the hashtable for a specific NUMA node
 int lookup(int key);

@@ -26,14 +26,12 @@ void init_hashtables() {
     }
 }
 
-void insert(int key, int value) {
-    unsigned int numa_node = hash_to_numa_node(key);
+void insert(int numa_node,int key, int value) {
     unsigned int bucket = hash_to_bucket(key);
 
     Hashtable* table = &hashtables[numa_node];
 
     Entry* new_entry = (Entry*)malloc(sizeof(Entry));
-    
     new_entry->key = key;
     new_entry->value = value;
     new_entry->next = NULL;
@@ -60,47 +58,48 @@ void insert(int key, int value) {
 }
 
 int lookup(int key) {
-    unsigned int numa_node = hash_to_numa_node(key);
-    unsigned int bucket = hash_to_bucket(key);
+    for (int numa_node = 0; numa_node < NUMA_NODES; ++numa_node) {
+        unsigned int bucket = hash_to_bucket(key);
 
-    Hashtable* table = &hashtables[numa_node];
-    Entry* current = table->buckets[bucket];
+        Hashtable* table = &hashtables[numa_node];
+        Entry* current = table->buckets[bucket];
 
-    while (current != NULL) {
-        if (current->key == key) {
-            return current->value;
+        while (current != NULL) {
+            if (current->key == key) {
+                return current->value;
+            }
+            current = current->next;
         }
-        current = current->next;
     }
-
     return -1; // Key not found
 }
 
 void delete(int key) {
-    unsigned int numa_node = hash_to_numa_node(key);
-    unsigned int bucket = hash_to_bucket(key);
+    for (int numa_node = 0; numa_node < NUMA_NODES; ++numa_node) {
+        unsigned int bucket = hash_to_bucket(key);
 
-    Hashtable* table = &hashtables[numa_node];
+        Hashtable* table = &hashtables[numa_node];
 
-    struct timespec ts;
-    ts.tv_sec = 0;
-    ts.tv_nsec = (rand() % 100) * 1000000;
-    nanosleep(&ts, NULL);  // Simulate delay
+        struct timespec ts;
+        ts.tv_sec = 0;
+        ts.tv_nsec = (rand() % 100) * 1000000;
+        nanosleep(&ts, NULL);  // Simulate delay
 
-    Entry* current = table->buckets[bucket];
-    Entry* prev = NULL;
+        Entry* current = table->buckets[bucket];
+        Entry* prev = NULL;
 
-    while (current != NULL) {
-        if (current->key == key) {
-            if (prev == NULL) {
-                table->buckets[bucket] = current->next;
-            } else {
-                prev->next = current->next;
+        while (current != NULL) {
+            if (current->key == key) {
+                if (prev == NULL) {
+                    table->buckets[bucket] = current->next;
+                } else {
+                    prev->next = current->next;
+                }
+                free(current);
+                return;
             }
-            free(current);
-            return;
+            prev = current;
+            current = current->next;
         }
-        prev = current;
-        current = current->next;
     }
 }

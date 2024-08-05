@@ -72,7 +72,7 @@ void* thread_func(void* arg) {
      if (action == 0) { // Insert operation
         int value = rand() % 1000; // Generate a random value
         atomic_fetch_add(&top, 1);
-        insert(key, value); // Insert a key-value pair
+        insert(numa_node,key, value); // Insert a key-value pair
     } else { // Delete operation
         if (top == -1) {
             // Stack is empty, skip the delete operation
