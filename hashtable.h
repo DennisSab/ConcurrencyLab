@@ -36,6 +36,8 @@ unsigned int hash_to_numa_node(int key);
 // Hash function 2: Determines bucket within NUMA node
 unsigned int hash_to_bucket(int key);
 
+void init_hash_coefficients();
+
 // Initialize hashtables
 void init_hashtables(void);
 
