@@ -6,28 +6,37 @@
 #include <errno.h>
 
 Hashtable hashtables[NUMA_NODES];
+unsigned int a[NUMA_NODES];
+unsigned int b[NUMA_NODES];
+const unsigned int p = 101;  // Prime number slightly larger than 100
+
 
 // Hash function 1: Determines NUMA node
 unsigned int hash_to_numa_node(int key) {
-    return key % 3;
+    return ((a[0] * key + b[0]) % p) % NUMA_NODES;
 }
 
 // Hash function 2: Determines bucket within NUMA node
-unsigned int hash_to_bucket(int key) {
-    return key % 15;
+unsigned int hash_to_bucket(int key, int numa_node) {
+    return ((a[numa_node] * key + b[numa_node]) % p) % BUCKETS_PER_NODE;
 }
 
 
 void init_hashtables() {
     for (int i = 0; i < NUMA_NODES; ++i) {
+        // Randomly select a and b for universal hashing
+        a[i] = rand() % (p - 1) + 1; // a is in the range [1, p-1]
+        b[i] = rand() % p;           // b is in the range [0, p-1]
+
         for (int j = 0; j < BUCKETS_PER_NODE; ++j) {
             hashtables[i].buckets[j] = NULL;
         }
     }
 }
 
+
 void insert(int numa_node,int key, int value) {
-    unsigned int bucket = hash_to_bucket(key);
+    unsigned int bucket = hash_to_bucket(key, numa_node);
 
     Hashtable* table = &hashtables[numa_node];
 
@@ -59,7 +68,7 @@ void insert(int numa_node,int key, int value) {
 
 int lookup(int key) {
     for (int numa_node = 0; numa_node < NUMA_NODES; ++numa_node) {
-        unsigned int bucket = hash_to_bucket(key);
+        unsigned int bucket = hash_to_bucket(key, numa_node);
 
         Hashtable* table = &hashtables[numa_node];
         Entry* current = table->buckets[bucket];
@@ -76,7 +85,7 @@ int lookup(int key) {
 
 void delete(int key) {
     for (int numa_node = 0; numa_node < NUMA_NODES; ++numa_node) {
-        unsigned int bucket = hash_to_bucket(key);
+        unsigned int bucket = hash_to_bucket(key, numa_node);
 
         Hashtable* table = &hashtables[numa_node];
 

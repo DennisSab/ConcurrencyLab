@@ -34,7 +34,7 @@ extern Hashtable hashtables[NUMA_NODES];
 unsigned int hash_to_numa_node(int key);
 
 // Hash function 2: Determines bucket within NUMA node
-unsigned int hash_to_bucket(int key);
+unsigned int hash_to_bucket(int key,int numa_node);
 
 // Initialize hashtables
 void init_hashtables(void);
