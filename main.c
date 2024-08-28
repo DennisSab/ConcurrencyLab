@@ -2,7 +2,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fastrand.c>
+#include <fastrand.h>
 #include <sched.h>
 #include <stdatomic.h>
 #include <time.h>
