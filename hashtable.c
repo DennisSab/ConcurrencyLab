@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
-#include <time.h>
+#include <time.h> 
+#include <fastrand.h>
 
 #define PRIME 101  // A prime number larger than the range of keys
 
@@ -17,10 +18,9 @@ HashCoefficients hash_coefficients[NUMA_NODES];
 
 // Initialize universal hashing coefficients for each NUMA node
 void init_hash_coefficients() {
-    srand(time(NULL));
     for (int i = 0; i < NUMA_NODES; ++i) {
-        hash_coefficients[i].a = rand() % (PRIME - 1) + 1;  // a is non-zero
-        hash_coefficients[i].b = rand() % PRIME;
+        hash_coefficients[i].a = synchFastRandomRange(1,PRIME -1) ;// a is non-zero
+        hash_coefficients[i].b = synchFastRandomRange(1,PRIME);
     }
 }
 
@@ -60,11 +60,6 @@ void insert(int key, int value) {
     new_entry->value = value;
     new_entry->next = NULL;
 
-    struct timespec ts;
-    ts.tv_sec = 0;
-    ts.tv_nsec = (rand() % 100) * 1000000;
-    nanosleep(&ts, NULL);  // Simulate delay
-
     Entry* current = table->buckets[bucket];
     if (current == NULL) {
         table->buckets[bucket] = new_entry;
@@ -103,11 +98,6 @@ void delete(int key) {
     unsigned int bucket = hash_to_bucket(key);
 
     Hashtable* table = &hashtables[numa_node];
-
-    struct timespec ts;
-    ts.tv_sec = 0;
-    ts.tv_nsec = (rand() % 100) * 1000000;
-    nanosleep(&ts, NULL);  // Simulate delay
 
     Entry* current = table->buckets[bucket];
     Entry* prev = NULL;

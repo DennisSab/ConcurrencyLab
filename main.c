@@ -2,32 +2,42 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <fastrand.c>
 #include <sched.h>
 #include <stdatomic.h>
 #include <time.h>
 
 #define THREADS_PER_NODE 16
 #define NUMA_NODES 4 // Define the number of NUMA nodes
-#define TOTAL_OPERATIONS 10000 // Total number of operations to perform
+#define TOTAL_OPERATIONS 1000000 // Total number of operations to perform
 
 _Atomic int top = -1;
+struct timespec start, end;
 
 typedef struct {
     int numa_node;
     int operations_per_thread;
+    int thread_id;
 } thread_arg_t;
 
 void* thread_func(void* arg) {
+
     thread_arg_t* thread_arg = (thread_arg_t*)arg;
     int numa_node = thread_arg->numa_node;
+    int thread_id = thread_arg->thread_id;
     int operations = thread_arg->operations_per_thread;
 
-    // Set thread affinity to the NUMA node
+    if (thread_id==0){
+        clock_gettime(CLOCK_MONOTONIC, &start);
+    }
+
+    // Set thread affinity to the specific core within the NUMA node
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
 
     // Define the core range based on NUMA node
     int start_core, end_core, start_core2, end_core2;
+
     switch (numa_node) {
         case 0:
             start_core = 0;
@@ -59,11 +69,17 @@ void* thread_func(void* arg) {
     }
 
     // Set affinity to cores of the given NUMA node
+
     for (int i = start_core; i <= end_core; ++i) {
+
         CPU_SET(i, &cpuset);
+
     }
+
     for (int i = start_core2; i <= end_core2; ++i) {
+
         CPU_SET(i, &cpuset);
+
     }
 
     if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) != 0) {
@@ -71,13 +87,14 @@ void* thread_func(void* arg) {
         return NULL;
     }
 
+
     // Perform the assigned operations
     for (int i = 0; i < operations; ++i) {
-        int key = rand() % 100;
-        int action = rand() % 2; // Randomly choose between 0 (insert) and 1 (delete)
+        int key = synchFastRandomRange(0, 100);  // Generate a random key between 0 and 99
+        int action = synchFastRandomRange(0, 1);  // Randomly choose between 0 (insert) and 1 (delete)
 
         if (action == 0) { // Insert operation
-            int value = rand() % 1000; // Generate a random value
+            int value = synchFastRandomRange(0, 1000);
             atomic_fetch_add(&top, 1);
             insert(key, value); // Insert a key-value pair
         } else { // Delete operation
@@ -103,18 +120,17 @@ int main(int argc, char* argv[]) {
 
     int num_threads = atoi(argv[1]);
 
-    if (num_threads != 2 && num_threads != 4 && num_threads != 8 && num_threads != 16 && num_threads != 32 && num_threads != 64) {
-        fprintf(stderr, "Please specify thread count as 2, 4, 8, 16, 32, or 64.\n");
+    if (num_threads != 4 && num_threads != 8 && num_threads != 16 && num_threads != 32 && num_threads != 64) {
+        fprintf(stderr, "Please specify thread count as 4, 8, 16, 32, or 64.\n");
         exit(EXIT_FAILURE);
     }
 
-    struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    
 
     pthread_t threads[num_threads];
     thread_arg_t thread_args[num_threads];
 
-    srand(time(NULL));
+    synchFastRandomSetSeed(thread_args->thread_id+1);
 
     init_hashtables();
 
