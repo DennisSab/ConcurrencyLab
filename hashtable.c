@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <fastrand.h>
 
 Hashtable hashtables[NUMA_NODES];
 unsigned int a[NUMA_NODES];
@@ -25,8 +26,8 @@ unsigned int hash_to_bucket(int key, int numa_node) {
 void init_hashtables() {
     for (int i = 0; i < NUMA_NODES; ++i) {
         // Randomly select a and b for universal hashing
-        a[i] = rand() % (p - 1) + 1; // a is in the range [1, p-1]
-        b[i] = rand() % p;           // b is in the range [0, p-1]
+        a[i] = synchFastRandomRange(1,p -1) ;// a is non-zero
+        b[i] = synchFastRandomRange(1,p);
 
         for (int j = 0; j < BUCKETS_PER_NODE; ++j) {
             hashtables[i].buckets[j] = NULL;
@@ -45,10 +46,6 @@ void insert(int numa_node,int key, int value) {
     new_entry->value = value;
     new_entry->next = NULL;
 
-    struct timespec ts;
-    ts.tv_sec = 0;
-    ts.tv_nsec = (rand() % 100) * 1000000;
-    nanosleep(&ts, NULL);  // Simulate delay
 
     Entry* current = table->buckets[bucket];
     if (current == NULL) {
@@ -88,11 +85,6 @@ void delete(int key) {
         unsigned int bucket = hash_to_bucket(key, numa_node);
 
         Hashtable* table = &hashtables[numa_node];
-
-        struct timespec ts;
-        ts.tv_sec = 0;
-        ts.tv_nsec = (rand() % 100) * 1000000;
-        nanosleep(&ts, NULL);  // Simulate delay
 
         Entry* current = table->buckets[bucket];
         Entry* prev = NULL;

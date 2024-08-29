@@ -2,13 +2,13 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -std=c11 -pthread -O2 -lnuma
+CFLAGS = -Wall -Wextra -std=c11 -pthread -O2
 
 # Source files
-SRCS = main.c hashtable.c
+SRCS = main.c hashtable.c fastrand.c
 
 # Header files
-HEADERS = hashtable.h
+HEADERS = hashtable.h fastrand.h
 
 # Object files
 OBJS = $(SRCS:.c=.o)
