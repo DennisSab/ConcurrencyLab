@@ -48,59 +48,22 @@ void insert(int numa_node,int key, int value) {
 
 
     Entry* current = table->buckets[bucket];
-    if (current == NULL) {
-        table->buckets[bucket] = new_entry;
-    } else {
-        while (current->next != NULL && current->key != key) {
-            current = current->next;
-        }
+    Entry* prev=NULL;
+    
+    while (current != NULL) {
         if (current->key == key) {
             current->value = value; // Update existing key
-            free(new_entry);
-        } else {
-            current->next = new_entry; // Insert new entry
+            free(new_entry); // Free the new entry as it's not needed anymore
+            return;
         }
+        prev = current;
+        current = current->next;
     }
-}
 
-int lookup(int key) {
-    for (int numa_node = 0; numa_node < NUMA_NODES; ++numa_node) {
-        unsigned int bucket = hash_to_bucket(key, numa_node);
-
-        Hashtable* table = &hashtables[numa_node];
-        Entry* current = table->buckets[bucket];
-
-        while (current != NULL) {
-            if (current->key == key) {
-                return current->value;
-            }
-            current = current->next;
-        }
-    }
-    return -1; // Key not found
-}
-
-void delete(int key) {
-    for (int numa_node = 0; numa_node < NUMA_NODES; ++numa_node) {
-        unsigned int bucket = hash_to_bucket(key, numa_node);
-
-        Hashtable* table = &hashtables[numa_node];
-
-        Entry* current = table->buckets[bucket];
-        Entry* prev = NULL;
-
-        while (current != NULL) {
-            if (current->key == key) {
-                if (prev == NULL) {
-                    table->buckets[bucket] = current->next;
-                } else {
-                    prev->next = current->next;
-                }
-                free(current);
-                return;
-            }
-            prev = current;
-            current = current->next;
-        }
+    // If we reach here, the key does not exist, so add the new entry
+    if (prev == NULL) {
+        table->buckets[bucket] = new_entry;
+    } else {
+        prev->next = new_entry;
     }
 }
