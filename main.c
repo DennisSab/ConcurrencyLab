@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
     pthread_t threads[num_threads];
     thread_arg_t thread_args[num_threads];
 
-    synchFastRandomSetSeed(thread_args->thread_id+1);
+    synchFastRandomSetSeed(1);
 
     init_hashtables();
 
