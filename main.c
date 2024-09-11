@@ -91,22 +91,10 @@ void* thread_func(void* arg) {
     // Perform the assigned operations
     for (int i = 0; i < operations; ++i) {
         int key = synchFastRandomRange(0, 100);  // Generate a random key between 0 and 99
-        int action = synchFastRandomRange(0, 1);  // Randomly choose between 0 (insert) and 1 (delete)
-
-        if (action == 0) { // Insert operation
+    
             int value = synchFastRandomRange(0, 1000);
             atomic_fetch_add(&top, 1);
-            insert(key, value); // Insert a key-value pair
-        } else { // Delete operation
-            if (top == -1) {
-                continue; // Stack is empty, skip the delete operation
-            }
-            int value = lookup(key); // Lookup a value by key
-            if (value != -1) {
-                delete(key); // Delete the key-value pair
-                atomic_fetch_sub(&top, 1);
-            }
-        }
+            insert(key, value); // Insert a key-value pair     
     }
 
     return NULL;
