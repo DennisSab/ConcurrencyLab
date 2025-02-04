@@ -1,4 +1,6 @@
-# Concurrent Directory-Based Stack
+# ITE FORTH INTERNSHIP
+
+## Concurrent Directory-Based Stack
 
 Overview
 I'm working on a directory-based stack that supports concurrent push and pop operations. This stack uses a hash table to store values, ensuring efficient insertion and deletion. The implementation leverages atomic operations to maintain thread safety without the need for explicit locks, which improves performance in a multithreaded environment.
